@@ -8,6 +8,7 @@ import { GitPanel } from './components/GitPanel';
 import { TemplatesView } from './components/TemplatesView';
 import { ExportModal } from './components/ExportModal';
 import {
+  buildSageSwayConfig,
   COLOR_THEME_PRESETS,
   CONFIG_TEMPLATES,
   ConfigTemplate,
@@ -194,7 +195,20 @@ export default function App() {
   };
 
   const handleApplyTemplate = (tpl: ConfigTemplate) => {
-    const waybarPreset = WAYBAR_THEME_PRESETS[tpl.themeId];
+    const isAutoSage = tpl.id === 'sage-auto';
+    const prefersDark =
+      isAutoSage &&
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const effectiveThemeId = isAutoSage
+      ? prefersDark
+        ? 'sage-dark'
+        : 'sage-light'
+      : tpl.themeId;
+    const swayConfig = isAutoSage ? buildSageSwayConfig('auto', prefersDark) : tpl.config;
+
+    const waybarPreset = WAYBAR_THEME_PRESETS[effectiveThemeId];
     const nextWaybar = createDefaultWaybarModel();
     if (waybarPreset) {
       nextWaybar.height = waybarPreset.height;
@@ -211,7 +225,7 @@ export default function App() {
     }
 
     setFiles({
-      'sway/config': tpl.config,
+      'sway/config': swayConfig,
       'waybar/config.jsonc': serializeWaybarJson(nextWaybar),
       'waybar/style.css': serializeWaybarCss(nextWaybar),
     });

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CONFIG_TEMPLATES } from './presets';
+import { buildSageSwayConfig, CONFIG_TEMPLATES } from './presets';
 import { parseSwayConfig, serializeSwayConfig, validateSwayConfig } from './parser';
 import { getAutocompleteSuggestions } from './autocomplete';
-import { createDefaultWaybarModel } from '../waybar/presets';
+import { createDefaultWaybarModel, WAYBAR_THEME_PRESETS } from '../waybar/presets';
 import {
   parseWaybarFiles,
   serializeWaybarCss,
@@ -208,4 +208,33 @@ test('Waybar parser preserves custom JSONC module keys and validator flags unkno
   const diags = validateWaybarFiles(customJsonc, 'window#waybar {}');
   assert.ok(diags.some((d) => d.message.includes('nonexistent_module')));
 });
+
+test('Sage Dark, Light, and Automatic templates parse cleanly and have matching Waybar presets', () => {
+  const sageIds = ['sage-dark', 'sage-light', 'sage-auto'] as const;
+  for (const id of sageIds) {
+    const tpl = CONFIG_TEMPLATES.find((t) => t.id === id);
+    assert.ok(tpl, `Missing template ${id}`);
+    const parsed = parseSwayConfig(tpl.config);
+    assert.equal(parsed.bar.swaybarCommand, 'waybar');
+    const diags = validateSwayConfig(tpl.config);
+    assert.equal(
+      diags.filter((d) => d.severity === 'error').length,
+      0,
+      `Template ${id} has validation errors: ${JSON.stringify(diags)}`
+    );
+  }
+
+  const autoLight = buildSageSwayConfig('auto', false);
+  const autoDark = buildSageSwayConfig('auto', true);
+  assert.match(autoLight, /output \* bg #EAEFEA solid_color/);
+  assert.match(autoLight, /darkman/);
+  assert.match(autoDark, /output \* bg #181E1A solid_color/);
+  assert.equal(validateSwayConfig(autoLight).filter((d) => d.severity === 'error').length, 0);
+  assert.equal(validateSwayConfig(autoDark).filter((d) => d.severity === 'error').length, 0);
+
+  assert.equal(WAYBAR_THEME_PRESETS['sage-dark'].style.accentColor, '#87A88D');
+  assert.equal(WAYBAR_THEME_PRESETS['sage-light'].style.accentColor, '#5B7F63');
+  assert.equal(WAYBAR_THEME_PRESETS['sage-light'].style.background, '#F1F5F1');
+});
+
 

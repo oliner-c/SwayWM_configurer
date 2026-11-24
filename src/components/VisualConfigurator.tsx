@@ -1195,6 +1195,8 @@ export const VisualConfigurator: React.FC<VisualConfiguratorProps> = ({
                   <option value="catppuccin-mocha">Catppuccin Mocha</option>
                   <option value="nord-frost">Nord Frost</option>
                   <option value="gruvbox-dark">Gruvbox Dark</option>
+                  <option value="sage-dark">Шалфей · Dark</option>
+                  <option value="sage-light">Шалфей · Light</option>
                 </select>
               </div>
 

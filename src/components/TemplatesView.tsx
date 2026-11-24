@@ -39,25 +39,71 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({
       </div>
 
       {/* Preset Templates */}
-      <div className="grid grid-cols-1 gap-3">
-        {CONFIG_TEMPLATES.map((tpl) => (
-          <div
-            key={tpl.id}
-            className="p-4 rounded-lg border border-slate-800/80 bg-[#090D14] flex flex-wrap items-center justify-between gap-4"
-          >
-            <div className="space-y-1 min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-slate-100">{tpl.name}</h3>
-              <p className="text-xs text-slate-400">{tpl.subtitle}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onApplyTemplate(tpl)}
-              className="px-4 py-2 text-xs font-semibold bg-sky-400 hover:bg-sky-300 text-slate-950 rounded-lg transition-colors whitespace-nowrap shrink-0"
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 gap-3">
+          {CONFIG_TEMPLATES.filter((t) => !t.id.startsWith('sage-')).map((tpl) => (
+            <div
+              key={tpl.id}
+              className="p-4 rounded-lg border border-slate-800/80 bg-[#090D14] flex flex-wrap items-center justify-between gap-4"
             >
-              Применить шаблон
-            </button>
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-slate-100">{tpl.name}</h3>
+                <p className="text-xs text-slate-400">{tpl.subtitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onApplyTemplate(tpl)}
+                className="px-4 py-2 text-xs font-semibold bg-sky-400 hover:bg-sky-300 text-slate-950 rounded-lg transition-colors whitespace-nowrap shrink-0"
+              >
+                Применить шаблон
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-slate-800/80 pt-5 space-y-3">
+          <div>
+            <h3 className="text-xs font-semibold text-slate-200">
+              Шалфейная тема (отдельно Dark / Light / Automatic)
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Спокойная природная палитра SwayWM + Waybar в трёх отдельных режимах оформления.
+            </p>
           </div>
-        ))}
+          <div className="grid grid-cols-1 gap-3">
+            {CONFIG_TEMPLATES.filter((t) => t.id.startsWith('sage-')).map((tpl) => (
+              <div
+                key={tpl.id}
+                className="p-4 rounded-lg border border-slate-800/80 bg-[#090D14] flex flex-wrap items-center justify-between gap-4"
+              >
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    {tpl.swatches && (
+                      <span className="inline-flex items-center gap-1" aria-hidden="true">
+                        {tpl.swatches.map((hex, idx) => (
+                          <span
+                            key={`${tpl.id}-sw-${idx}`}
+                            className="w-3.5 h-3.5 rounded-[3px] border border-slate-700/80 shrink-0"
+                            style={{ backgroundColor: hex }}
+                          />
+                        ))}
+                      </span>
+                    )}
+                    <h4 className="text-sm font-semibold text-slate-100">{tpl.name}</h4>
+                  </div>
+                  <p className="text-xs text-slate-400">{tpl.subtitle}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onApplyTemplate(tpl)}
+                  className="px-4 py-2 text-xs font-semibold bg-sky-400 hover:bg-sky-300 text-slate-950 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                >
+                  Применить шаблон
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Import Existing Sway Config */}

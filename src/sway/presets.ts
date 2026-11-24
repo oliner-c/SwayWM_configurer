@@ -201,14 +201,217 @@ export const COLOR_THEME_PRESETS: ColorThemePreset[] = [
       urgentWorkspaceText: '#FBF1C7',
     },
   },
+  {
+    id: 'sage-dark',
+    name: 'Шалфей · Dark',
+    description: 'Глубокий тёмно-хвойный фон с приглушённым шалфейным акцентом #87A88D',
+    wallpaper: '#181E1A',
+    colors: {
+      focused: {
+        border: '#87A88D',
+        background: '#232B25',
+        text: '#EDF2EE',
+        indicator: '#A3C4A8',
+        childBorder: '#87A88D',
+      },
+      focusedInactive: {
+        border: '#3C493F',
+        background: '#1F2621',
+        text: '#A5B4A8',
+        indicator: '#4C5C50',
+        childBorder: '#3C493F',
+      },
+      unfocused: {
+        border: '#28312A',
+        background: '#181E1A',
+        text: '#6E7E72',
+        indicator: '#28312A',
+        childBorder: '#28312A',
+      },
+      urgent: {
+        border: '#D4776B',
+        background: '#522B27',
+        text: '#FDF2F0',
+        indicator: '#E08B7F',
+        childBorder: '#D4776B',
+      },
+    },
+    barColors: {
+      background: '#1B221D',
+      statusline: '#E6EDE8',
+      separator: '#354238',
+      focusedWorkspaceBorder: '#87A88D',
+      focusedWorkspaceBg: '#87A88D',
+      focusedWorkspaceText: '#151B17',
+      inactiveWorkspaceBorder: '#1B221D',
+      inactiveWorkspaceBg: '#1B221D',
+      inactiveWorkspaceText: '#A5B4A8',
+      urgentWorkspaceBorder: '#D4776B',
+      urgentWorkspaceBg: '#D4776B',
+      urgentWorkspaceText: '#FFFFFF',
+    },
+  },
+  {
+    id: 'sage-light',
+    name: 'Шалфей · Light',
+    description: 'Светлый туманно-шалфейный фон с лесным акцентом #5B7F63',
+    wallpaper: '#EAEFEA',
+    colors: {
+      focused: {
+        border: '#5B7F63',
+        background: '#DDE6DE',
+        text: '#1E2720',
+        indicator: '#769A7E',
+        childBorder: '#5B7F63',
+      },
+      focusedInactive: {
+        border: '#B9C7BB',
+        background: '#E5ECE5',
+        text: '#4A594D',
+        indicator: '#9FB0A2',
+        childBorder: '#B9C7BB',
+      },
+      unfocused: {
+        border: '#CFD9D0',
+        background: '#EAEFEA',
+        text: '#6B7B6E',
+        indicator: '#CFD9D0',
+        childBorder: '#CFD9D0',
+      },
+      urgent: {
+        border: '#C2594E',
+        background: '#F5DCD9',
+        text: '#54201B',
+        indicator: '#D46D62',
+        childBorder: '#C2594E',
+      },
+    },
+    barColors: {
+      background: '#F1F5F1',
+      statusline: '#1E2720',
+      separator: '#C5D1C7',
+      focusedWorkspaceBorder: '#5B7F63',
+      focusedWorkspaceBg: '#5B7F63',
+      focusedWorkspaceText: '#F8FAF8',
+      inactiveWorkspaceBorder: '#F1F5F1',
+      inactiveWorkspaceBg: '#F1F5F1',
+      inactiveWorkspaceText: '#4A594D',
+      urgentWorkspaceBorder: '#C2594E',
+      urgentWorkspaceBg: '#C2594E',
+      urgentWorkspaceText: '#FFFFFF',
+    },
+  },
 ];
 
 export interface ConfigTemplate {
   id: string;
   themeId: string;
+  mode?: 'Dark' | 'Light' | 'Automatic';
+  swatches?: [string, string, string];
   name: string;
   subtitle: string;
   config: string;
+}
+
+export function buildSageSwayConfig(variant: 'dark' | 'light' | 'auto', resolvedDark = true): string {
+  const isDark = variant === 'dark' || (variant === 'auto' && resolvedDark);
+  const title =
+    variant === 'dark'
+      ? 'Шалфей (Dark)'
+      : variant === 'light'
+      ? 'Шалфей (Light)'
+      : 'Шалфей (Automatic Dark/Light)';
+
+  const colorsBlock = isDark
+    ? `### Цвета окон (Шалфей · Dark)
+client.focused          #87A88D #232B25 #EDF2EE #A3C4A8 #87A88D
+client.focused_inactive #3C493F #1F2621 #A5B4A8 #4C5C50 #3C493F
+client.unfocused        #28312A #181E1A #6E7E72 #28312A #28312A
+client.urgent           #D4776B #522B27 #FDF2F0 #E08B7F #D4776B
+
+### Мониторы
+output * bg #181E1A solid_color`
+    : `### Цвета окон (Шалфей · Light)
+client.focused          #5B7F63 #DDE6DE #1E2720 #769A7E #5B7F63
+client.focused_inactive #B9C7BB #E5ECE5 #4A594D #9FB0A2 #B9C7BB
+client.unfocused        #CFD9D0 #EAEFEA #6B7B6E #CFD9D0 #CFD9D0
+client.urgent           #C2594E #F5DCD9 #54201B #D46D62 #C2594E
+
+### Мониторы
+output * bg #EAEFEA solid_color`;
+
+  const autoExec =
+    variant === 'auto'
+      ? `
+# Автопереключение Dark/Light через darkman или системный портал XDG
+exec_always sh -c 'command -v darkman >/dev/null 2>&1 && darkman run || true'
+exec gsettings set org.gnome.desktop.interface color-scheme ${isDark ? 'prefer-dark' : 'prefer-light'}`
+      : variant === 'dark'
+      ? `
+exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark`
+      : `
+exec gsettings set org.gnome.desktop.interface color-scheme prefer-light`;
+
+  return `# SwayWM Configuration — ${title}
+
+### Переменные
+set $mod Mod4
+set $left h
+set $down j
+set $up k
+set $right l
+set $term foot
+set $menu fuzzel
+
+### Шрифт и поведение окон
+font pango:JetBrains Mono 10
+default_border pixel 2
+title_align center
+focus_follows_mouse yes
+floating_modifier $mod normal
+
+### Отступы
+gaps inner 10
+gaps outer 4
+smart_gaps on
+smart_borders on
+
+${colorsBlock}
+output DP-1 resolution 1920x1080@144Hz position 0,0 scale 1
+
+### Устройства ввода
+input type:keyboard {
+    xkb_layout us,ru
+    xkb_options grp:alt_shift_toggle
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+}
+
+### Горячие клавиши
+bindsym $mod+Return exec $term
+bindsym $mod+d exec $menu
+bindsym $mod+Shift+q kill
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+e exit
+bindsym $mod+f fullscreen toggle
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+
+### Правила окон и автозапуск
+for_window [app_id="pavucontrol"] floating enable
+exec mako${autoExec}
+
+### Панель состояния (Waybar / Swaybar)
+bar {
+    swaybar_command waybar
+}
+`;
 }
 
 export const CONFIG_TEMPLATES: ConfigTemplate[] = [
@@ -446,5 +649,32 @@ bar {
     }
 }
 `,
+  },
+  {
+    id: 'sage-dark',
+    themeId: 'sage-dark',
+    mode: 'Dark',
+    swatches: ['#181E1A', '#87A88D', '#D4776B'],
+    name: 'Шалфей · Dark',
+    subtitle: 'Тёмная шалфейная палитра для SwayWM + Waybar (#181E1A / #87A88D)',
+    config: buildSageSwayConfig('dark', true),
+  },
+  {
+    id: 'sage-light',
+    themeId: 'sage-light',
+    mode: 'Light',
+    swatches: ['#EAEFEA', '#5B7F63', '#C2594E'],
+    name: 'Шалфей · Light',
+    subtitle: 'Светлая шалфейная палитра для SwayWM + Waybar (#EAEFEA / #5B7F63)',
+    config: buildSageSwayConfig('light', false),
+  },
+  {
+    id: 'sage-auto',
+    themeId: 'sage-auto',
+    mode: 'Automatic',
+    swatches: ['#181E1A', '#87A88D', '#EAEFEA'],
+    name: 'Шалфей · Automatic',
+    subtitle: 'Автопереключение Dark/Light по системной схеме (darkman + gsettings)',
+    config: buildSageSwayConfig('auto', true),
   },
 ];
