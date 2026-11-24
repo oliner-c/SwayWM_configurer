@@ -1,11 +1,31 @@
-<div align="center">
+# SwayForge — Конфигуратор SwayWM + Waybar
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Интерактивный редактор конфигураций для **SwayWM** (`~/.config/sway/config`) и **Waybar** (`~/.config/waybar/config.jsonc`, `~/.config/waybar/style.css`) с контекстным автодополнением, живым предпросмотром рабочего стола и встроенной системой контроля версий Git.
 
-  <h1>Built with AI Studio</h2>
+## Локальный запуск
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+```bash
+npm install
+npm run dev
+```
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+Проверка типов, тесты и production-сборка:
 
-</div>
+```bash
+npm run lint
+npm test
+npm run build
+```
+
+## Деплой на Vercel
+
+Проект полностью статический (Vite + React SPA), не требует серверной базы данных или переменных окружения и готов к запуску на Vercel из коробки (`vercel.json` уже настроен):
+
+1. Импортируйте репозиторий в [Vercel Dashboard](https://vercel.com/new) **или** выполните в корне проекта:
+   ```bash
+   npx vercel --prod
+   ```
+2. Параметры сборки определяются автоматически из `vercel.json`:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`

@@ -1,0 +1,6 @@
+{
+  "name": "SwayForge — Конфигуратор SwayWM",
+  "description": "Интерактивный редактор конфигурации SwayWM с автодополнением, предпросмотром рабочего стола в реальном времени, поддержкой Git-откатов и готовностью к деплою на Vercel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
