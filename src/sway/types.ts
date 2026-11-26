@@ -14,6 +14,9 @@ export interface SwayOutputConfig {
   position: string;
   scale: number;
   background: string;
+  backgroundMode?: 'solid_color' | 'fill' | 'fit' | 'stretch' | 'center' | 'tile';
+  transform?: 'normal' | '90' | '180' | '270' | 'flipped' | 'flipped-90' | 'flipped-180' | 'flipped-270';
+  adaptiveSync?: 'on' | 'off';
   extraArgs?: string;
 }
 
@@ -23,9 +26,17 @@ export interface SwayInputConfig {
   xkbLayout: string;
   xkbVariant: string;
   xkbOptions: string;
+  repeatDelay?: number;
+  repeatRate?: number;
+  xkbNumlock?: 'enabled' | 'disabled';
   tap: 'enabled' | 'disabled';
   naturalScroll: 'enabled' | 'disabled';
+  dwt?: 'enabled' | 'disabled';
+  middleEmulation?: 'enabled' | 'disabled';
   accelSpeed: number;
+  accelProfile?: 'adaptive' | 'flat';
+  scrollMethod?: 'two_finger' | 'edge' | 'on_button_down' | 'none';
+  scrollFactor?: number;
   extraLines?: string[];
 }
 
@@ -91,10 +102,18 @@ export interface SwayConfigModel {
     font: string;
     fontSize: number;
     focusFollowsMouse: 'yes' | 'no' | 'always';
+    focusWrapping?: 'yes' | 'no' | 'force' | 'workspace';
+    mouseWarping?: 'output' | 'container' | 'none';
     defaultBorder: 'normal' | 'pixel' | 'none';
+    defaultFloatingBorder?: 'normal' | 'pixel' | 'none';
     borderThickness: number;
+    floatingBorderThickness?: number;
+    hideEdgeBorders?: 'none' | 'vertical' | 'horizontal' | 'both' | 'smart' | 'smart_no_gaps';
     floatingModifier: string;
     titleAlign: 'left' | 'center' | 'right';
+    workspaceLayout?: 'default' | 'stacking' | 'tabbed';
+    workspaceAutoBackAndForth?: boolean;
+    popupDuringFullscreen?: 'smart' | 'ignore' | 'leave_fullscreen';
   };
   gaps: {
     inner: number;

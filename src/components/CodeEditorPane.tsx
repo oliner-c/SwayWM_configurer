@@ -5,6 +5,7 @@ import { SwayDiagnostic } from '../sway/types';
 import { WaybarDiagnostic } from '../waybar/types';
 import { AutocompleteItem, getAutocompleteSuggestions } from '../sway/autocomplete';
 import { getWaybarAutocompleteSuggestions } from '../waybar/autocomplete';
+import { AppLang, tr } from '../i18n/translations';
 
 interface CodeEditorPaneProps {
   activeFile: ConfigFileId;
@@ -13,6 +14,7 @@ interface CodeEditorPaneProps {
   onChangeFile: (file: ConfigFileId, content: string) => void;
   swayDiagnostics: SwayDiagnostic[];
   waybarDiagnostics: WaybarDiagnostic[];
+  lang?: AppLang;
 }
 
 const FILE_TABS: Array<{ id: ConfigFileId; label: string }> = [
@@ -28,6 +30,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
   onChangeFile,
   swayDiagnostics,
   waybarDiagnostics,
+  lang = 'ru',
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const preRef = useRef<HTMLPreElement | null>(null);
@@ -179,7 +182,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
     }
   };
 
-  const highlightLine = (line: string, lineIdx: number) => {
+  const highlightLine = (line: string) => {
     const trimmed = line.trim();
     if (
       (activeFile === 'sway/config' && trimmed.startsWith('#')) ||
@@ -189,7 +192,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
     }
 
     if (activeFile === 'sway/config') {
-      const m = line.match(/^(\s*)(set|bindsym|bindcode|gaps|smart_gaps|smart_borders|default_border|client\.\S+|output|input|bar|for_window|assign|exec_always|exec|font|title_align|focus_follows_mouse|floating_modifier|swaybar_command|position|status_command|height|tray_output|colors|xkb_\S+|tap|natural_scroll)(\b.*)$/);
+      const m = line.match(/^(\s*)(set|bindsym|bindcode|gaps|smart_gaps|smart_borders|default_border|default_floating_border|hide_edge_borders|workspace_layout|workspace_auto_back_and_forth|focus_wrapping|mouse_warping|popup_during_fullscreen|client\.\S+|output|input|bar|for_window|assign|no_focus|exec_always|exec|font|title_align|focus_follows_mouse|floating_modifier|swaybar_command|position|status_command|height|tray_output|colors|xkb_\S+|tap|natural_scroll|dwt|middle_emulation|repeat_\S+|accel_profile|pointer_accel|scroll_\S+)(\b.*)$/);
       if (m) {
         return (
           <>
@@ -245,7 +248,11 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
     <div className="flex flex-col h-full bg-[#090D14]">
       {/* File Tabs Bar */}
       <div className="px-3 py-2 border-b border-slate-800/80 bg-[#0E131E] flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1" role="tablist" aria-label="Файлы конфигурации">
+        <div
+          className="flex flex-wrap items-center gap-1"
+          role="tablist"
+          aria-label={tr(lang, 'Файлы конфигурации', 'Configuration files')}
+        >
           {FILE_TABS.map((tab) => {
             const isSelected = activeFile === tab.id;
             return (
@@ -283,7 +290,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
             className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-sky-300 bg-slate-800/70 hover:bg-slate-800 rounded-md transition-colors"
           >
             <Sparkles className="w-3 h-3" aria-hidden="true" />
-            Автодополнение (Ctrl+Space)
+            {tr(lang, 'Автодополнение (Ctrl+Space)', 'Autocomplete (Ctrl+Space)')}
           </button>
         </div>
       </div>
@@ -325,7 +332,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
           >
             {lines.map((line, idx) => (
               <div key={idx} className="h-[20px]">
-                {highlightLine(line, idx)}
+                {highlightLine(line)}
               </div>
             ))}
           </pre>
@@ -344,7 +351,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
-            aria-label={`Текстовый редактор ${activeFile}`}
+            aria-label={tr(lang, `Текстовый редактор ${activeFile}`, `Code editor ${activeFile}`)}
             data-testid="code-editor-textarea"
             className="relative z-10 w-full h-full py-3 px-3 font-mono text-[13px] leading-[20px] bg-transparent text-transparent caret-sky-400 resize-none focus:outline-none whitespace-pre overflow-auto selection:bg-sky-500/30"
           />
@@ -353,7 +360,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
           {showAutocomplete && autocomplete.items.length > 0 && (
             <div
               role="listbox"
-              aria-label="Варианты автодополнения"
+              aria-label={tr(lang, 'Варианты автодополнения', 'Autocomplete suggestions')}
               data-testid="autocomplete-popup"
               style={{ top: `${caretCoords.top}px`, left: `${caretCoords.left}px` }}
               className="absolute z-30 w-80 max-h-64 overflow-y-auto rounded-lg border border-slate-700 bg-[#111827] shadow-2xl divide-y divide-slate-800/80"
@@ -397,7 +404,13 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
       <div className="border-t border-slate-800/80 bg-[#0E131E] px-3 py-2 max-h-28 overflow-y-auto">
         {activeDiagnostics.length === 0 ? (
           <div className="text-xs text-emerald-400 flex items-center gap-2">
-            <span>Синтаксис корректен · ошибок не найдено ({activeFile})</span>
+            <span>
+              {tr(
+                lang,
+                `Синтаксис корректен · ошибок не найдено (${activeFile})`,
+                `Syntax valid · 0 errors found (${activeFile})`
+              )}
+            </span>
           </div>
         ) : (
           <div className="space-y-1">
@@ -413,7 +426,9 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
                 ) : (
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                 )}
-                <span className="font-mono tabular-nums shrink-0">Стр. {d.line}:</span>
+                <span className="font-mono tabular-nums shrink-0">
+                  {tr(lang, `Стр. ${d.line}:`, `Ln ${d.line}:`)}
+                </span>
                 <span>{d.message}</span>
               </div>
             ))}

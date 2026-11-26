@@ -204,29 +204,29 @@ export const COLOR_THEME_PRESETS: ColorThemePreset[] = [
   {
     id: 'sage-dark',
     name: 'Шалфей · Dark',
-    description: 'Глубокий тёмно-хвойный фон с приглушённым шалфейным акцентом #87A88D',
-    wallpaper: '#181E1A',
+    description: 'Тёмный шалфейный фон #242B26, графитовые островки #2C3438 и кремовый акцент #D0C4A8',
+    wallpaper: '#242B26',
     colors: {
       focused: {
-        border: '#87A88D',
-        background: '#232B25',
-        text: '#EDF2EE',
-        indicator: '#A3C4A8',
-        childBorder: '#87A88D',
+        border: '#D0C4A8',
+        background: '#2C3438',
+        text: '#EDF0EC',
+        indicator: '#908C7C',
+        childBorder: '#D0C4A8',
       },
       focusedInactive: {
-        border: '#3C493F',
-        background: '#1F2621',
-        text: '#A5B4A8',
-        indicator: '#4C5C50',
-        childBorder: '#3C493F',
+        border: '#49524C',
+        background: '#252C28',
+        text: '#AEB6AE',
+        indicator: '#5D665F',
+        childBorder: '#49524C',
       },
       unfocused: {
-        border: '#28312A',
-        background: '#181E1A',
-        text: '#6E7E72',
-        indicator: '#28312A',
-        childBorder: '#28312A',
+        border: '#2E3631',
+        background: '#1E2420',
+        text: '#7D877E',
+        indicator: '#2E3631',
+        childBorder: '#2E3631',
       },
       urgent: {
         border: '#D4776B',
@@ -237,15 +237,15 @@ export const COLOR_THEME_PRESETS: ColorThemePreset[] = [
       },
     },
     barColors: {
-      background: '#1B221D',
-      statusline: '#E6EDE8',
-      separator: '#354238',
-      focusedWorkspaceBorder: '#87A88D',
-      focusedWorkspaceBg: '#87A88D',
-      focusedWorkspaceText: '#151B17',
-      inactiveWorkspaceBorder: '#1B221D',
-      inactiveWorkspaceBg: '#1B221D',
-      inactiveWorkspaceText: '#A5B4A8',
+      background: '#2C3438',
+      statusline: '#D8DDD9',
+      separator: '#404448',
+      focusedWorkspaceBorder: '#D0C4A8',
+      focusedWorkspaceBg: '#D0C4A8',
+      focusedWorkspaceText: '#1C2124',
+      inactiveWorkspaceBorder: '#2C3438',
+      inactiveWorkspaceBg: '#3A4246',
+      inactiveWorkspaceText: '#D8DDD9',
       urgentWorkspaceBorder: '#D4776B',
       urgentWorkspaceBg: '#D4776B',
       urgentWorkspaceText: '#FFFFFF',
@@ -254,29 +254,29 @@ export const COLOR_THEME_PRESETS: ColorThemePreset[] = [
   {
     id: 'sage-light',
     name: 'Шалфей · Light',
-    description: 'Светлый туманно-шалфейный фон с лесным акцентом #5B7F63',
-    wallpaper: '#EAEFEA',
+    description: 'Светлый туманно-шалфейный фон #C2CEC1 с лесными островками #E6ECE5 / #5B7F63',
+    wallpaper: '#C2CEC1',
     colors: {
       focused: {
         border: '#5B7F63',
-        background: '#DDE6DE',
-        text: '#1E2720',
+        background: '#DDE6DC',
+        text: '#1E2620',
         indicator: '#769A7E',
         childBorder: '#5B7F63',
       },
       focusedInactive: {
-        border: '#B9C7BB',
-        background: '#E5ECE5',
-        text: '#4A594D',
-        indicator: '#9FB0A2',
-        childBorder: '#B9C7BB',
+        border: '#A9B7A8',
+        background: '#D5DFD4',
+        text: '#465448',
+        indicator: '#95A595',
+        childBorder: '#A9B7A8',
       },
       unfocused: {
-        border: '#CFD9D0',
-        background: '#EAEFEA',
-        text: '#6B7B6E',
-        indicator: '#CFD9D0',
-        childBorder: '#CFD9D0',
+        border: '#B8C4B6',
+        background: '#C8D3C6',
+        text: '#5D6C5F',
+        indicator: '#B8C4B6',
+        childBorder: '#B8C4B6',
       },
       urgent: {
         border: '#C2594E',
@@ -287,15 +287,15 @@ export const COLOR_THEME_PRESETS: ColorThemePreset[] = [
       },
     },
     barColors: {
-      background: '#F1F5F1',
-      statusline: '#1E2720',
-      separator: '#C5D1C7',
+      background: '#E6ECE5',
+      statusline: '#1E2620',
+      separator: '#B5C2B4',
       focusedWorkspaceBorder: '#5B7F63',
       focusedWorkspaceBg: '#5B7F63',
       focusedWorkspaceText: '#F8FAF8',
-      inactiveWorkspaceBorder: '#F1F5F1',
-      inactiveWorkspaceBg: '#F1F5F1',
-      inactiveWorkspaceText: '#4A594D',
+      inactiveWorkspaceBorder: '#E6ECE5',
+      inactiveWorkspaceBg: '#D4DDD2',
+      inactiveWorkspaceText: '#1E2620',
       urgentWorkspaceBorder: '#C2594E',
       urgentWorkspaceBg: '#C2594E',
       urgentWorkspaceText: '#FFFFFF',
@@ -324,26 +324,26 @@ export function buildSageSwayConfig(variant: 'dark' | 'light' | 'auto', resolved
 
   const colorsBlock = isDark
     ? `### Цвета окон (Шалфей · Dark)
-client.focused          #87A88D #232B25 #EDF2EE #A3C4A8 #87A88D
-client.focused_inactive #3C493F #1F2621 #A5B4A8 #4C5C50 #3C493F
-client.unfocused        #28312A #181E1A #6E7E72 #28312A #28312A
+client.focused          #D0C4A8 #2C3438 #EDF0EC #908C7C #D0C4A8
+client.focused_inactive #49524C #252C28 #AEB6AE #5D665F #49524C
+client.unfocused        #2E3631 #1E2420 #7D877E #2E3631 #2E3631
 client.urgent           #D4776B #522B27 #FDF2F0 #E08B7F #D4776B
 
 ### Мониторы
-output * bg #181E1A solid_color`
+output * bg #242B26 solid_color`
     : `### Цвета окон (Шалфей · Light)
-client.focused          #5B7F63 #DDE6DE #1E2720 #769A7E #5B7F63
-client.focused_inactive #B9C7BB #E5ECE5 #4A594D #9FB0A2 #B9C7BB
-client.unfocused        #CFD9D0 #EAEFEA #6B7B6E #CFD9D0 #CFD9D0
+client.focused          #5B7F63 #DDE6DC #1E2620 #769A7E #5B7F63
+client.focused_inactive #A9B7A8 #D5DFD4 #465448 #95A595 #A9B7A8
+client.unfocused        #B8C4B6 #C8D3C6 #5D6C5F #B8C4B6 #B8C4B6
 client.urgent           #C2594E #F5DCD9 #54201B #D46D62 #C2594E
 
 ### Мониторы
-output * bg #EAEFEA solid_color`;
+output * bg #C2CEC1 solid_color`;
 
   const autoExec =
     variant === 'auto'
       ? `
-# Автопереключение Dark/Light через darkman или системный портал XDG
+# Автопереключение Dark/Light (опционально установите darkman)
 exec_always sh -c 'command -v darkman >/dev/null 2>&1 && darkman run || true'
 exec gsettings set org.gnome.desktop.interface color-scheme ${isDark ? 'prefer-dark' : 'prefer-light'}`
       : variant === 'dark'
@@ -352,7 +352,7 @@ exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark`
       : `
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-light`;
 
-  return `# SwayWM Configuration — ${title}
+  return `# SwayWM Configuration — ${title} (подобрано под установленные пакеты)
 
 ### Переменные
 set $mod Mod4
@@ -360,11 +360,11 @@ set $left h
 set $down j
 set $up k
 set $right l
-set $term foot
-set $menu fuzzel
+set $term alacritty
+set $menu wofi --show drun
 
 ### Шрифт и поведение окон
-font pango:JetBrains Mono 10
+font pango:JetBrainsMono Nerd Font 10
 default_border pixel 2
 title_align center
 focus_follows_mouse yes
@@ -377,7 +377,7 @@ smart_gaps on
 smart_borders on
 
 ${colorsBlock}
-output DP-1 resolution 1920x1080@144Hz position 0,0 scale 1
+output eDP-1 scale 1
 
 ### Устройства ввода
 input type:keyboard {
@@ -388,26 +388,55 @@ input type:keyboard {
 input type:touchpad {
     tap enabled
     natural_scroll enabled
+    dwt enabled
 }
 
 ### Горячие клавиши
 bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
+bindsym $mod+e exec thunar
 bindsym $mod+Shift+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exit
 bindsym $mod+f fullscreen toggle
 bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
 bindsym $mod+1 workspace number 1
 bindsym $mod+2 workspace number 2
 bindsym $mod+3 workspace number 3
 bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+
+### Мультимедиа, яркость и скриншоты (wireplumber, playerctl, brightnessctl, grim+slurp+satty)
+bindsym --locked XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bindsym --locked XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym --locked XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym --locked XF86AudioPlay exec playerctl play-pause
+bindsym --locked XF86AudioNext exec playerctl next
+bindsym --locked XF86AudioPrev exec playerctl previous
+bindsym XF86MonBrightnessUp exec brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym Print exec grim -g "$(slurp)" - | wl-copy
+bindsym $mod+Shift+s exec grim -g "$(slurp)" - | satty --filename -
 
 ### Правила окон и автозапуск
 for_window [app_id="pavucontrol"] floating enable
-exec mako${autoExec}
+for_window [app_id="blueman-manager"] floating enable
+for_window [app_id="satty"] floating enable
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec blueman-applet${autoExec}
 
-### Панель состояния (Waybar / Swaybar)
+### Панель состояния (Waybar)
 bar {
     swaybar_command waybar
 }
@@ -567,6 +596,100 @@ bar {
 `,
   },
   {
+    id: 'nordic',
+    themeId: 'nord-frost',
+    swatches: ['#2E3440', '#3B4252', '#88C0D0'],
+    name: 'Nordic (Waybar)',
+    subtitle: 'Арктическая палитра Nord (#2E3440 / #88C0D0), alacritty, wofi, Waybar, отступы 8px',
+    config: `# SwayWM Configuration — Nordic
+
+### Переменные
+set $mod Mod4
+set $left h
+set $down j
+set $up k
+set $right l
+set $term alacritty
+set $menu wofi --show drun
+
+### Шрифт и поведение окон
+font pango:JetBrainsMono Nerd Font 10
+default_border pixel 2
+title_align center
+focus_follows_mouse yes
+floating_modifier $mod normal
+
+### Отступы
+gaps inner 8
+gaps outer 4
+smart_gaps on
+smart_borders on
+
+### Цвета окон (Nord Frost)
+client.focused          #88C0D0 #3B4252 #ECEFF4 #8FBCBB #88C0D0
+client.focused_inactive #4C566A #3B4252 #D8DEE9 #4C566A #4C566A
+client.unfocused        #2E3440 #2E3440 #81A1C1 #2E3440 #2E3440
+client.urgent           #BF616A #BF616A #ECEFF4 #D08770 #BF616A
+
+### Мониторы
+output * bg #2E3440 solid_color
+output eDP-1 resolution 1920x1080@60Hz position 0,0 scale 1
+
+### Устройства ввода
+input type:keyboard {
+    xkb_layout us,ru
+    xkb_options grp:alt_shift_toggle
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+}
+
+### Горячие клавиши
+bindsym $mod+Return exec $term
+bindsym $mod+d exec $menu
+bindsym $mod+Shift+q kill
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+e exit
+bindsym $mod+f fullscreen toggle
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym --locked XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bindsym --locked XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym --locked XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym XF86MonBrightnessUp exec brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym Print exec grim -g "$(slurp)" - | wl-copy
+
+### Правила окон и автозапуск
+for_window [app_id="pavucontrol"] floating enable
+for_window [window_role="dialog"] floating enable
+exec mako
+exec wl-paste --watch cliphist store
+
+### Панель состояния (Waybar)
+bar {
+    swaybar_command waybar
+}
+`,
+  },
+  {
     id: 'laptop-hidpi',
     themeId: 'nord-frost',
     name: 'Ноутбук HiDPI + Swaybar',
@@ -654,27 +777,27 @@ bar {
     id: 'sage-dark',
     themeId: 'sage-dark',
     mode: 'Dark',
-    swatches: ['#181E1A', '#87A88D', '#D4776B'],
+    swatches: ['#2C3438', '#908C7C', '#D0C4A8'],
     name: 'Шалфей · Dark',
-    subtitle: 'Тёмная шалфейная палитра для SwayWM + Waybar (#181E1A / #87A88D)',
+    subtitle: 'Alacritty, wofi, Waybar островки (#2C3438 / #908C7C / #D0C4A8), brightnessctl, satty, blueman',
     config: buildSageSwayConfig('dark', true),
   },
   {
     id: 'sage-light',
     themeId: 'sage-light',
     mode: 'Light',
-    swatches: ['#EAEFEA', '#5B7F63', '#C2594E'],
+    swatches: ['#C2CEC1', '#E6ECE5', '#5B7F63'],
     name: 'Шалфей · Light',
-    subtitle: 'Светлая шалфейная палитра для SwayWM + Waybar (#EAEFEA / #5B7F63)',
+    subtitle: 'Alacritty, wofi, светлые островки Waybar (#E6ECE5 / #C5D0C3 / #5B7F63), ноутбук-бинды',
     config: buildSageSwayConfig('light', false),
   },
   {
     id: 'sage-auto',
     themeId: 'sage-auto',
     mode: 'Automatic',
-    swatches: ['#181E1A', '#87A88D', '#EAEFEA'],
+    swatches: ['#2C3438', '#908C7C', '#C2CEC1'],
     name: 'Шалфей · Automatic',
-    subtitle: 'Автопереключение Dark/Light по системной схеме (darkman + gsettings)',
+    subtitle: 'Alacritty, wofi, островки Waybar с автопереключением Dark/Light (gsettings + darkman)',
     config: buildSageSwayConfig('auto', true),
   },
 ];

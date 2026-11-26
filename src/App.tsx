@@ -7,6 +7,20 @@ import { LivePreview } from './components/LivePreview';
 import { GitPanel } from './components/GitPanel';
 import { TemplatesView } from './components/TemplatesView';
 import { ExportModal } from './components/ExportModal';
+import { EcosystemPanel } from './components/EcosystemPanel';
+import {
+  analyzeInstalledPackages,
+  applyPackagesToSwayModel,
+  getConfigurableAppsFromAnalysis,
+  PackageAnalysisResult,
+  parsePackageList,
+} from './packages/packageAnalyzer';
+import {
+  createDefaultEcosystemSettings,
+  deriveSystemPalette,
+  EcosystemSettings,
+  generateUnifiedEcosystemFiles,
+} from './ecosystem/ecosystemEngine';
 import {
   buildSageSwayConfig,
   COLOR_THEME_PRESETS,
@@ -43,8 +57,13 @@ import {
   switchBranch,
 } from './git/gitEngine';
 
+import { AppLang, tr } from './i18n/translations';
+
 const STORAGE_KEY_REPO = 'swayforge_git_repo_v1';
 const STORAGE_KEY_FILES = 'swayforge_working_files_v1';
+const STORAGE_KEY_PACKAGES = 'swayforge_packages_v1';
+const STORAGE_KEY_ECOSYSTEM = 'swayforge_ecosystem_v1';
+const STORAGE_KEY_LANG = 'swayforge_lang_v1';
 
 function createInitialBundle(): ConfigBundle {
   const defaultSway = CONFIG_TEMPLATES[0].config;
@@ -88,15 +107,53 @@ export default function App() {
   const [builderSplitCode, setBuilderSplitCode] = useState<boolean>(true);
   const [exportOpen, setExportOpen] = useState<boolean>(false);
 
-  // Persist working files & Git repository to localStorage
+  const [packageListRaw, setPackageListRaw] = useState<string>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_PACKAGES) ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const [ecosystem, setEcosystem] = useState<EcosystemSettings>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_ECOSYSTEM);
+      if (saved) return { ...createDefaultEcosystemSettings(), ...JSON.parse(saved) };
+    } catch {
+      // Ignore malformed stored settings
+    }
+    return createDefaultEcosystemSettings();
+  });
+
+  const [lang, setLang] = useState<AppLang>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_LANG) === 'en' ? 'en' : 'ru';
+    } catch {
+      return 'ru';
+    }
+  });
+
+  // Persist working files, Git repository, and language to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(files));
       localStorage.setItem(STORAGE_KEY_REPO, JSON.stringify(repo));
+      localStorage.setItem(STORAGE_KEY_PACKAGES, packageListRaw);
+      localStorage.setItem(STORAGE_KEY_ECOSYSTEM, JSON.stringify(ecosystem));
+      localStorage.setItem(STORAGE_KEY_LANG, lang);
     } catch {
       // Ignore storage quota errors
     }
-  }, [files, repo]);
+  }, [files, repo, packageListRaw, ecosystem, lang]);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+      document.title =
+        lang === 'en'
+          ? 'SwayForge — SwayWM & Waybar Configurator'
+          : 'SwayForge — Редактор конфигурации SwayWM';
+    }
+  }, [lang]);
 
   // Parsed models for visual configurator & live desktop preview
   const swayModel = useMemo(() => parseSwayConfig(files['sway/config']), [files]);
@@ -117,6 +174,32 @@ export default function App() {
   const totalErrorCount =
     swayDiagnostics.filter((d) => d.severity === 'error').length +
     waybarDiagnostics.filter((d) => d.severity === 'error').length;
+
+  // Package analyzer & Unified system ecosystem generation
+  const packageAnalysis = useMemo(
+    () => analyzeInstalledPackages(parsePackageList(packageListRaw)),
+    [packageListRaw]
+  );
+  const detectedAppSections = useMemo(
+    () => getConfigurableAppsFromAnalysis(packageAnalysis),
+    [packageAnalysis]
+  );
+  useEffect(() => {
+    if (
+      activeSection.startsWith('app-') &&
+      !detectedAppSections.some((sec) => sec.id === activeSection)
+    ) {
+      setActiveSection('appearance');
+    }
+  }, [activeSection, detectedAppSections]);
+  const systemPalette = useMemo(
+    () => deriveSystemPalette(swayModel, waybarModel, ecosystem.colorMode),
+    [swayModel, waybarModel, ecosystem.colorMode]
+  );
+  const ecosystemFiles = useMemo(
+    () => generateUnifiedEcosystemFiles(swayModel, waybarModel, ecosystem),
+    [swayModel, waybarModel, ecosystem]
+  );
 
   // Git diff vs HEAD
   const headCommit = useMemo(() => getHeadCommit(repo), [repo]);
@@ -183,6 +266,18 @@ export default function App() {
           marginLeft: waybarPreset.marginLeft,
           marginRight: waybarPreset.marginRight,
           spacing: waybarPreset.spacing,
+          ...(waybarPreset.modulesLeft ? { modulesLeft: [...waybarPreset.modulesLeft] } : {}),
+          ...(waybarPreset.modulesCenter ? { modulesCenter: [...waybarPreset.modulesCenter] } : {}),
+          ...(waybarPreset.modulesRight ? { modulesRight: [...waybarPreset.modulesRight] } : {}),
+          ...(waybarPreset.clockFormat ? { clockFormat: waybarPreset.clockFormat } : {}),
+          ...(waybarPreset.memoryFormat ? { memoryFormat: waybarPreset.memoryFormat } : {}),
+          ...(waybarPreset.networkFormatWifi
+            ? { networkFormatWifi: waybarPreset.networkFormatWifi }
+            : {}),
+          ...(waybarPreset.pulseaudioFormat
+            ? { pulseaudioFormat: waybarPreset.pulseaudioFormat }
+            : {}),
+          ...(waybarPreset.batteryFormat ? { batteryFormat: waybarPreset.batteryFormat } : {}),
           style: { ...waybarPreset.style },
         }
       : waybarModel;
@@ -216,6 +311,18 @@ export default function App() {
       nextWaybar.marginLeft = waybarPreset.marginLeft;
       nextWaybar.marginRight = waybarPreset.marginRight;
       nextWaybar.spacing = waybarPreset.spacing;
+      if (waybarPreset.modulesLeft) nextWaybar.modulesLeft = [...waybarPreset.modulesLeft];
+      if (waybarPreset.modulesCenter) nextWaybar.modulesCenter = [...waybarPreset.modulesCenter];
+      if (waybarPreset.modulesRight) nextWaybar.modulesRight = [...waybarPreset.modulesRight];
+      if (waybarPreset.clockFormat) nextWaybar.clockFormat = waybarPreset.clockFormat;
+      if (waybarPreset.memoryFormat) nextWaybar.memoryFormat = waybarPreset.memoryFormat;
+      if (waybarPreset.networkFormatWifi) {
+        nextWaybar.networkFormatWifi = waybarPreset.networkFormatWifi;
+      }
+      if (waybarPreset.pulseaudioFormat) {
+        nextWaybar.pulseaudioFormat = waybarPreset.pulseaudioFormat;
+      }
+      if (waybarPreset.batteryFormat) nextWaybar.batteryFormat = waybarPreset.batteryFormat;
       nextWaybar.style = { ...waybarPreset.style };
       if (tpl.id === 'catppuccin-rice') {
         nextWaybar.position = 'bottom';
@@ -229,7 +336,27 @@ export default function App() {
       'waybar/config.jsonc': serializeWaybarJson(nextWaybar),
       'waybar/style.css': serializeWaybarCss(nextWaybar),
     });
+
+    const parsedNext = parseSwayConfig(swayConfig);
+    setEcosystem((prev) => ({
+      ...prev,
+      terminalApp: parsedNext.variables.term.includes('foot') ? 'foot' : 'alacritty',
+      launcherApp: parsedNext.variables.menu.includes('fuzzel') ? 'fuzzel' : 'wofi',
+      uiCornerRadius: Math.min(20, Math.max(4, nextWaybar.style.borderRadius)),
+      colorMode: tpl.id === 'sage-light' ? 'light' : tpl.id === 'sage-dark' ? 'dark' : 'auto',
+    }));
+
     setActiveTab('builder');
+  };
+
+  const handleSyncSwayWithPackages = (analysis: PackageAnalysisResult) => {
+    const nextModel = applyPackagesToSwayModel(swayModel, analysis);
+    setFiles((prev) => ({ ...prev, 'sway/config': serializeSwayConfig(nextModel) }));
+    setEcosystem((prev) => ({
+      ...prev,
+      terminalApp: analysis.recommendedTerm === 'foot' ? 'foot' : 'alacritty',
+      launcherApp: analysis.recommendedMenu.includes('fuzzel') ? 'fuzzel' : 'wofi',
+    }));
   };
 
   // Git Actions
@@ -261,16 +388,19 @@ export default function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         onOpenExport={() => setExportOpen(true)}
+        lang={lang}
+        onChangeLang={setLang}
       />
 
       {/* Mobile Secondary Nav */}
       <div className="flex md:hidden border-b border-slate-800/80 bg-[#0E131E] px-3 py-2 gap-1.5 overflow-x-auto">
         {(
           [
-            { id: 'builder', label: 'Конструктор' },
-            { id: 'code', label: 'Код' },
+            { id: 'builder', label: tr(lang, 'Конструктор', 'Builder') },
+            { id: 'code', label: tr(lang, 'Код', 'Code') },
+            { id: 'ecosystem', label: tr(lang, 'Пакеты', 'Packages') },
             { id: 'git', label: 'Git' },
-            { id: 'templates', label: 'Шаблоны' },
+            { id: 'templates', label: tr(lang, 'Шаблоны', 'Templates') },
           ] as const
         ).map((t) => (
           <button
@@ -307,6 +437,9 @@ export default function App() {
           totalAdded={workingDiff.totalAdded}
           totalRemoved={workingDiff.totalRemoved}
           diagnosticErrors={totalErrorCount}
+          analyzedPackageCount={packageAnalysis.totalPackages}
+          detectedSections={detectedAppSections}
+          lang={lang}
         />
 
         {/* Center Workspace Pane */}
@@ -315,14 +448,20 @@ export default function App() {
             <>
               <div className="px-4 py-2 border-b border-slate-800/80 bg-[#0B0F17] flex items-center justify-between gap-2 shrink-0">
                 <span className="text-xs text-slate-400">
-                  Режим редактирования: визуальная форма + код
+                  {tr(
+                    lang,
+                    'Режим редактирования: визуальная форма + код',
+                    'Edit mode: visual form + code'
+                  )}
                 </span>
                 <button
                   type="button"
                   onClick={() => setBuilderSplitCode((v) => !v)}
                   className="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-700 text-slate-300 hover:text-slate-100 hover:bg-slate-800 transition-colors"
                 >
-                  {builderSplitCode ? 'Скрыть нижний код' : 'Показать код и автодополнение'}
+                  {builderSplitCode
+                    ? tr(lang, 'Скрыть нижний код', 'Hide bottom code')
+                    : tr(lang, 'Показать код и автодополнение', 'Show code & autocomplete')}
                 </button>
               </div>
               <div className="flex-1 min-h-0 flex flex-col">
@@ -331,9 +470,14 @@ export default function App() {
                     section={activeSection}
                     sway={swayModel}
                     waybar={waybarModel}
+                    ecosystem={ecosystem}
+                    palette={systemPalette}
+                    packageAnalysis={packageAnalysis}
                     onUpdateSway={handleUpdateSwayModel}
                     onUpdateWaybar={handleUpdateWaybarModel}
+                    onUpdateEcosystem={setEcosystem}
                     onApplySyncedTheme={handleApplySyncedTheme}
+                    lang={lang}
                   />
                 </div>
                 {builderSplitCode && (
@@ -345,6 +489,7 @@ export default function App() {
                       onChangeFile={handleChangeRawFile}
                       swayDiagnostics={swayDiagnostics}
                       waybarDiagnostics={waybarDiagnostics}
+                      lang={lang}
                     />
                   </div>
                 )}
@@ -360,6 +505,7 @@ export default function App() {
               onChangeFile={handleChangeRawFile}
               swayDiagnostics={swayDiagnostics}
               waybarDiagnostics={waybarDiagnostics}
+              lang={lang}
             />
           )}
 
@@ -368,10 +514,27 @@ export default function App() {
               repo={repo}
               workingFiles={files}
               workingDiff={workingDiff}
+              waybar={waybarModel}
               onCommit={handleCommit}
               onRollback={handleRollback}
               onCreateBranch={handleCreateBranch}
               onSwitchBranch={handleSwitchBranch}
+              lang={lang}
+            />
+          )}
+
+          {activeTab === 'ecosystem' && (
+            <EcosystemPanel
+              packageListRaw={packageListRaw}
+              onChangePackageListRaw={setPackageListRaw}
+              analysis={packageAnalysis}
+              ecosystem={ecosystem}
+              onUpdateEcosystem={setEcosystem}
+              palette={systemPalette}
+              generatedFiles={ecosystemFiles}
+              onSyncSwayWithPackages={handleSyncSwayWithPackages}
+              onOpenExport={() => setExportOpen(true)}
+              lang={lang}
             />
           )}
 
@@ -382,13 +545,22 @@ export default function App() {
                 setFiles((prev) => ({ ...prev, 'sway/config': raw }));
                 setActiveTab('builder');
               }}
+              currentSwayConfig={files['sway/config']}
+              lang={lang}
             />
           )}
         </div>
 
         {/* Right Real-Time Live Preview Pane */}
         <div className="w-full lg:w-[480px] xl:w-[540px] shrink-0 min-h-[420px] lg:min-h-0">
-          <LivePreview sway={swayModel} waybar={waybarModel} />
+          <LivePreview
+            sway={swayModel}
+            waybar={waybarModel}
+            ecosystem={ecosystem}
+            palette={systemPalette}
+            detected={packageAnalysis.detected}
+            lang={lang}
+          />
         </div>
       </main>
 
@@ -397,6 +569,10 @@ export default function App() {
         onClose={() => setExportOpen(false)}
         files={files}
         repo={repo}
+        ecosystemFiles={ecosystemFiles}
+        palette={systemPalette}
+        ecosystem={ecosystem}
+        lang={lang}
       />
     </div>
   );

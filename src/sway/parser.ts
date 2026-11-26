@@ -30,10 +30,18 @@ export function createDefaultModel(): SwayConfigModel {
       font: 'JetBrains Mono',
       fontSize: 10,
       focusFollowsMouse: 'yes',
+      focusWrapping: 'yes',
+      mouseWarping: 'output',
       defaultBorder: 'pixel',
+      defaultFloatingBorder: 'normal',
       borderThickness: 2,
+      floatingBorderThickness: 2,
+      hideEdgeBorders: 'none',
       floatingModifier: '$mod normal',
       titleAlign: 'center',
+      workspaceLayout: 'default',
+      workspaceAutoBackAndForth: false,
+      popupDuringFullscreen: 'smart',
     },
     gaps: {
       inner: 8,
@@ -207,16 +215,41 @@ export function parseSwayConfig(raw: string): SwayConfigModel {
           if (key === 'xkb_layout') target.xkbLayout = cleanVal;
           else if (key === 'xkb_variant') target.xkbVariant = cleanVal;
           else if (key === 'xkb_options') target.xkbOptions = cleanVal;
-          else if (key === 'tap' && (cleanVal === 'enabled' || cleanVal === 'disabled')) {
+          else if (key === 'repeat_delay') {
+            const num = parseInt(cleanVal, 10);
+            if (!Number.isNaN(num)) target.repeatDelay = num;
+          } else if (key === 'repeat_rate') {
+            const num = parseInt(cleanVal, 10);
+            if (!Number.isNaN(num)) target.repeatRate = num;
+          } else if (key === 'xkb_numlock' && (cleanVal === 'enabled' || cleanVal === 'disabled')) {
+            target.xkbNumlock = cleanVal;
+          } else if (key === 'tap' && (cleanVal === 'enabled' || cleanVal === 'disabled')) {
             target.tap = cleanVal;
           } else if (
             key === 'natural_scroll' &&
             (cleanVal === 'enabled' || cleanVal === 'disabled')
           ) {
             target.naturalScroll = cleanVal;
+          } else if (key === 'dwt' && (cleanVal === 'enabled' || cleanVal === 'disabled')) {
+            target.dwt = cleanVal;
+          } else if (
+            key === 'middle_emulation' &&
+            (cleanVal === 'enabled' || cleanVal === 'disabled')
+          ) {
+            target.middleEmulation = cleanVal;
           } else if (key === 'pointer_accel') {
             const num = parseFloat(cleanVal);
             if (!Number.isNaN(num)) target.accelSpeed = num;
+          } else if (key === 'accel_profile' && (cleanVal === 'adaptive' || cleanVal === 'flat')) {
+            target.accelProfile = cleanVal;
+          } else if (
+            key === 'scroll_method' &&
+            ['two_finger', 'edge', 'on_button_down', 'none'].includes(cleanVal)
+          ) {
+            target.scrollMethod = cleanVal as SwayInputConfig['scrollMethod'];
+          } else if (key === 'scroll_factor') {
+            const num = parseFloat(cleanVal);
+            if (!Number.isNaN(num)) target.scrollFactor = num;
           } else {
             target.extraLines = [...(target.extraLines ?? []), trimmed];
           }
@@ -295,6 +328,25 @@ export function parseSwayConfig(raw: string): SwayConfigModel {
       continue;
     }
 
+    const floatBorderMatch = trimmed.match(
+      /^default_floating_border\s+(normal|pixel|none)(?:\s+(\d+))?$/
+    );
+    if (floatBorderMatch) {
+      model.general.defaultFloatingBorder = floatBorderMatch[1] as 'normal' | 'pixel' | 'none';
+      if (floatBorderMatch[2]) {
+        model.general.floatingBorderThickness = parseInt(floatBorderMatch[2], 10);
+      }
+      continue;
+    }
+
+    const hideEdgeMatch = trimmed.match(
+      /^hide_edge_borders\s+(none|vertical|horizontal|both|smart|smart_no_gaps)$/
+    );
+    if (hideEdgeMatch) {
+      model.general.hideEdgeBorders = hideEdgeMatch[1] as SwayConfigModel['general']['hideEdgeBorders'];
+      continue;
+    }
+
     const titleAlignMatch = trimmed.match(/^title_align\s+(left|center|right)$/);
     if (titleAlignMatch) {
       model.general.titleAlign = titleAlignMatch[1] as 'left' | 'center' | 'right';
@@ -304,6 +356,39 @@ export function parseSwayConfig(raw: string): SwayConfigModel {
     const focusMouseMatch = trimmed.match(/^focus_follows_mouse\s+(yes|no|always)$/);
     if (focusMouseMatch) {
       model.general.focusFollowsMouse = focusMouseMatch[1] as 'yes' | 'no' | 'always';
+      continue;
+    }
+
+    const focusWrapMatch = trimmed.match(/^focus_wrapping\s+(yes|no|force|workspace)$/);
+    if (focusWrapMatch) {
+      model.general.focusWrapping = focusWrapMatch[1] as SwayConfigModel['general']['focusWrapping'];
+      continue;
+    }
+
+    const mouseWarpMatch = trimmed.match(/^mouse_warping\s+(output|container|none)$/);
+    if (mouseWarpMatch) {
+      model.general.mouseWarping = mouseWarpMatch[1] as SwayConfigModel['general']['mouseWarping'];
+      continue;
+    }
+
+    const wsLayoutMatch = trimmed.match(/^workspace_layout\s+(default|stacking|tabbed)$/);
+    if (wsLayoutMatch) {
+      model.general.workspaceLayout = wsLayoutMatch[1] as SwayConfigModel['general']['workspaceLayout'];
+      continue;
+    }
+
+    const wsBackMatch = trimmed.match(/^workspace_auto_back_and_forth\s+(yes|no)$/);
+    if (wsBackMatch) {
+      model.general.workspaceAutoBackAndForth = wsBackMatch[1] === 'yes';
+      continue;
+    }
+
+    const popupFsMatch = trimmed.match(
+      /^popup_during_fullscreen\s+(smart|ignore|leave_fullscreen)$/
+    );
+    if (popupFsMatch) {
+      model.general.popupDuringFullscreen =
+        popupFsMatch[1] as SwayConfigModel['general']['popupDuringFullscreen'];
       continue;
     }
 
@@ -362,9 +447,14 @@ export function parseSwayConfig(raw: string): SwayConfigModel {
         background: '',
         extraArgs: '',
       };
-      const bgMatch = rest.match(/\bbg\s+(#[0-9a-fA-F]+|"[^"]+"|\S+)(?:\s+(stretch|fill|fit|center|tile|solid_color))?/);
+      const bgMatch = rest.match(
+        /\bbg\s+(#[0-9a-fA-F]+|"[^"]+"|\S+)(?:\s+(stretch|fill|fit|center|tile|solid_color))?/
+      );
       if (bgMatch) {
         out.background = bgMatch[1].replace(/^"|"$/g, '');
+        if (bgMatch[2]) {
+          out.backgroundMode = bgMatch[2] as SwayOutputConfig['backgroundMode'];
+        }
         rest = rest.replace(bgMatch[0], '');
       }
       const resMatch = rest.match(/\b(?:resolution|mode)\s+(\d+x\d+)(?:@([\d.]+Hz))?/);
@@ -382,6 +472,18 @@ export function parseSwayConfig(raw: string): SwayConfigModel {
       if (scaleMatch) {
         out.scale = parseFloat(scaleMatch[1]);
         rest = rest.replace(scaleMatch[0], '');
+      }
+      const transformMatch = rest.match(
+        /\btransform\s+(normal|90|180|270|flipped-90|flipped-180|flipped-270|flipped)/
+      );
+      if (transformMatch) {
+        out.transform = transformMatch[1] as SwayOutputConfig['transform'];
+        rest = rest.replace(transformMatch[0], '');
+      }
+      const adaptMatch = rest.match(/\badaptive_sync\s+(on|off)/);
+      if (adaptMatch) {
+        out.adaptiveSync = adaptMatch[1] as 'on' | 'off';
+        rest = rest.replace(adaptMatch[0], '');
       }
       const leftover = rest.trim();
       if (leftover) out.extraArgs = leftover;
@@ -454,8 +556,43 @@ export function serializeSwayConfig(model: SwayConfigModel): string {
   } else {
     lines.push(`default_border ${model.general.defaultBorder} ${model.general.borderThickness}`);
   }
+  if (
+    model.general.defaultFloatingBorder &&
+    model.general.defaultFloatingBorder !== 'normal'
+  ) {
+    if (model.general.defaultFloatingBorder === 'none') {
+      lines.push('default_floating_border none');
+    } else {
+      lines.push(
+        `default_floating_border ${model.general.defaultFloatingBorder} ${model.general.floatingBorderThickness ?? 2}`
+      );
+    }
+  } else if (
+    model.general.floatingBorderThickness !== undefined &&
+    model.general.floatingBorderThickness !== 2
+  ) {
+    lines.push(`default_floating_border normal ${model.general.floatingBorderThickness}`);
+  }
+  if (model.general.hideEdgeBorders && model.general.hideEdgeBorders !== 'none') {
+    lines.push(`hide_edge_borders ${model.general.hideEdgeBorders}`);
+  }
   lines.push(`title_align ${model.general.titleAlign}`);
   lines.push(`focus_follows_mouse ${model.general.focusFollowsMouse}`);
+  if (model.general.focusWrapping && model.general.focusWrapping !== 'yes') {
+    lines.push(`focus_wrapping ${model.general.focusWrapping}`);
+  }
+  if (model.general.mouseWarping && model.general.mouseWarping !== 'output') {
+    lines.push(`mouse_warping ${model.general.mouseWarping}`);
+  }
+  if (model.general.workspaceLayout && model.general.workspaceLayout !== 'default') {
+    lines.push(`workspace_layout ${model.general.workspaceLayout}`);
+  }
+  if (model.general.workspaceAutoBackAndForth) {
+    lines.push('workspace_auto_back_and_forth yes');
+  }
+  if (model.general.popupDuringFullscreen && model.general.popupDuringFullscreen !== 'smart') {
+    lines.push(`popup_during_fullscreen ${model.general.popupDuringFullscreen}`);
+  }
   if (model.general.floatingModifier) {
     lines.push(`floating_modifier ${model.general.floatingModifier}`);
   }
@@ -483,7 +620,8 @@ export function serializeSwayConfig(model: SwayConfigModel): string {
       const parts: string[] = [`output ${out.name}`];
       if (out.background) {
         const isHex = /^#[0-9a-fA-F]{3,8}$/.test(out.background);
-        parts.push(isHex ? `bg ${out.background} solid_color` : `bg ${out.background} fill`);
+        const mode = out.backgroundMode || (isHex ? 'solid_color' : 'fill');
+        parts.push(`bg ${out.background} ${mode}`);
       }
       if (out.resolution) {
         parts.push(`resolution ${out.resolution}${out.refreshRate ? `@${out.refreshRate}` : ''}`);
@@ -495,6 +633,12 @@ export function serializeSwayConfig(model: SwayConfigModel): string {
         parts.push(`scale ${out.scale}`);
       } else if (out.resolution) {
         parts.push('scale 1');
+      }
+      if (out.transform && out.transform !== 'normal') {
+        parts.push(`transform ${out.transform}`);
+      }
+      if (out.adaptiveSync) {
+        parts.push(`adaptive_sync ${out.adaptiveSync}`);
       }
       if (out.extraArgs) {
         parts.push(out.extraArgs);
@@ -511,14 +655,24 @@ export function serializeSwayConfig(model: SwayConfigModel): string {
       if (inp.xkbLayout) lines.push(`    xkb_layout ${inp.xkbLayout}`);
       if (inp.xkbVariant) lines.push(`    xkb_variant ${inp.xkbVariant}`);
       if (inp.xkbOptions) lines.push(`    xkb_options ${inp.xkbOptions}`);
+      if (inp.repeatDelay) lines.push(`    repeat_delay ${inp.repeatDelay}`);
+      if (inp.repeatRate) lines.push(`    repeat_rate ${inp.repeatRate}`);
+      if (inp.xkbNumlock) lines.push(`    xkb_numlock ${inp.xkbNumlock}`);
       if (inp.identifier.includes('touchpad') || inp.tap === 'enabled') {
         lines.push(`    tap ${inp.tap}`);
       }
       if (inp.identifier.includes('touchpad') || inp.naturalScroll === 'enabled') {
         lines.push(`    natural_scroll ${inp.naturalScroll}`);
       }
+      if (inp.dwt) lines.push(`    dwt ${inp.dwt}`);
+      if (inp.middleEmulation) lines.push(`    middle_emulation ${inp.middleEmulation}`);
       if (inp.accelSpeed !== 0) {
         lines.push(`    pointer_accel ${inp.accelSpeed}`);
+      }
+      if (inp.accelProfile) lines.push(`    accel_profile ${inp.accelProfile}`);
+      if (inp.scrollMethod) lines.push(`    scroll_method ${inp.scrollMethod}`);
+      if (inp.scrollFactor && inp.scrollFactor !== 1) {
+        lines.push(`    scroll_factor ${inp.scrollFactor}`);
       }
       for (const extra of inp.extraLines ?? []) {
         lines.push(`    ${extra}`);
